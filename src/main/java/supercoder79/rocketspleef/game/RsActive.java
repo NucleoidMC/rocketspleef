@@ -211,7 +211,8 @@ public class RsActive {
             } else {
                 ServerPlayerEntity lastPlayer = this.space.getPlayers().stream().filter(p -> p.interactionManager.getGameMode().isSurvivalLike()).findFirst().orElse(null);
                 if (lastPlayer != null) {
-                    this.space.getPlayers().sendMessage(new LiteralText(Formatting.GOLD + lastPlayer.getEntityName() + " Has won!"));
+                    this.space.getPlayers().sendMessage(new LiteralText(Formatting.GOLD + lastPlayer.getEntityName() + " has won!"));
+                    this.space.getPlayers().sendMessage(new LiteralText(Formatting.AQUA + "RocketSpleef has finished!"));
                 } else {
                     this.space.getPlayers().sendMessage(new LiteralText(Formatting.AQUA + "RocketSpleef has finished!"));
                 }
