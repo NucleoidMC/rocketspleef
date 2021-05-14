@@ -18,7 +18,7 @@
     "rocketspleef.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.11.3",
+    "fabricloader": ">=0.9.0",
     "fabric": "*",
     "minecraft": "1.16.4"
   }
