@@ -22,5 +22,4 @@ public class MixinFireballEntity {
             return entity.damage(source, amount);
         }
     }
-    }
 }
