@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.7-SNAPSHOT'
+    id 'fabric-loom' version '0.8-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -14,6 +14,7 @@ repositories {
     mavenLocal()
     maven { url = "https://jitpack.io/" }
     maven { url = "https://maven.gegy.dev/" }
+    maven { url = "https://maven.nucleoid.xyz"}
 }
 
 dependencies {
@@ -28,10 +29,11 @@ dependencies {
     implementation "kdotjpg:open-simplex:2.0"
     include "kdotjpg:open-simplex:2.0"
 
-    modImplementation "xyz.nucleoid:plasmid:0.4.67"
+    // Plasmid
+    modImplementation "xyz.nucleoid:plasmid:0.5-pre35+1.17.1"
     modImplementation "xyz.nucleoid:substrate:0.1.1"
 
-    modRuntime ("com.github.SuperCoder7979:databreaker:0.2.6") {
+    modRuntime ("supercoder79:databreaker:0.2.7") {
         exclude module : "fabric-loader"
     }
 
@@ -42,13 +44,8 @@ dependencies {
 processResources {
     inputs.property "version", project.version
 
-    from(sourceSets.main.resources.srcDirs) {
-        include "fabric.mod.json"
+    filesMatching("fabric.mod.json") {
         expand "version": project.version
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude "fabric.mod.json"
     }
 }
 

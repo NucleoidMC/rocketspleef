@@ -15,20 +15,21 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.collection.WeightedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import supercoder79.rocketspleef.RocketSpleef;
+import supercoder79.rocketspleef.util.WeightedList;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.event.*;
-import xyz.nucleoid.plasmid.game.player.JoinResult;
+import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
+import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
+import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
-import xyz.nucleoid.plasmid.game.rule.RuleResult;
+import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.util.ItemStackBuilder;
-import xyz.nucleoid.plasmid.widget.GlobalWidgets;
+import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
+import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 import java.util.Random;
 
@@ -38,6 +39,7 @@ public class RsActive {
             .add(ItemStackBuilder.of(Items.GOLDEN_HOE).setUnbreakable().setName(new LiteralText("Fast Fireball Cannon")).build(), 5)
             .add(ItemStackBuilder.of(Items.DIAMOND_HOE).setUnbreakable().setName(new LiteralText("Multi Fireball Cannon")).build(), 1);
 
+    private final ServerWorld world;
     private final GameSpace space;
     private final RsMap map;
     private final RsConfig config;
@@ -45,7 +47,8 @@ public class RsActive {
     private final GlobalWidgets widgets;
     private long gameEndTimer = -1;
 
-    public RsActive(GameSpace space, RsMap map, RsConfig config, PlayerSet players, GlobalWidgets widgets) {
+    public RsActive(ServerWorld world, GameSpace space, RsMap map, RsConfig config, PlayerSet players, GlobalWidgets widgets) {
+        this.world = world;
         this.space = space;
         this.map = map;
         this.config = config;
@@ -53,37 +56,37 @@ public class RsActive {
         this.widgets = widgets;
     }
 
-    public static void open(GameSpace space, RsMap map, RsConfig config) {
-        space.openGame(game -> {
-            GlobalWidgets widgets = new GlobalWidgets(game);
-            RsActive active = new RsActive(space, map, config, space.getPlayers(), widgets);
+    public static void open(ServerWorld world, GameSpace space, RsMap map, RsConfig config) {
+        space.setActivity(game -> {
+            GlobalWidgets widgets = GlobalWidgets.addTo(game);
+            RsActive active = new RsActive(world, space, map, config, space.getPlayers(), widgets);
 
-            game.setRule(GameRule.BREAK_BLOCKS, RuleResult.ALLOW);
-            game.setRule(GameRule.PLACE_BLOCKS, RuleResult.ALLOW);
-            game.setRule(GameRule.CRAFTING, RuleResult.DENY);
-            game.setRule(GameRule.PORTALS, RuleResult.DENY);
-            game.setRule(GameRule.PVP, RuleResult.ALLOW);
-            game.setRule(GameRule.BLOCK_DROPS, RuleResult.ALLOW);
-            game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
-            game.setRule(GameRule.HUNGER, RuleResult.DENY);
-            game.setRule(GameRule.THROW_ITEMS, RuleResult.ALLOW);
-            game.setRule(GameRule.UNSTABLE_TNT, RuleResult.ALLOW);
-            game.setRule(RocketSpleef.REDUCE_EXPLOSION_DAMAGE, RuleResult.ALLOW);
-            game.setRule(RocketSpleef.REJECT_ITEMS, RuleResult.ALLOW);
+            game.setRule(GameRuleType.BREAK_BLOCKS, ActionResult.SUCCESS);
+            game.setRule(GameRuleType.PLACE_BLOCKS, ActionResult.SUCCESS);
+            game.setRule(GameRuleType.CRAFTING, ActionResult.FAIL);
+            game.setRule(GameRuleType.PORTALS, ActionResult.FAIL);
+            game.setRule(GameRuleType.PVP, ActionResult.SUCCESS);
+            game.setRule(GameRuleType.BLOCK_DROPS, ActionResult.SUCCESS);
+            game.setRule(GameRuleType.FALL_DAMAGE, ActionResult.FAIL);
+            game.setRule(GameRuleType.HUNGER, ActionResult.FAIL);
+            game.setRule(GameRuleType.THROW_ITEMS, ActionResult.SUCCESS);
+            game.setRule(GameRuleType.UNSTABLE_TNT, ActionResult.SUCCESS);
+            game.setRule(RocketSpleef.REDUCE_EXPLOSION_DAMAGE, ActionResult.SUCCESS);
+            game.setRule(RocketSpleef.REJECT_ITEMS, ActionResult.SUCCESS);
 
-            game.on(GameOpenListener.EVENT, active::open);
-            game.on(OfferPlayerListener.EVENT, player -> JoinResult.ok());
+            game.listen(GameActivityEvents.CREATE, active::open);
+            game.listen(GamePlayerEvents.ADD, player -> {});
 
-            game.on(UseItemListener.EVENT, active::onUseItem);
+            game.listen(ItemUseEvent.EVENT, active::onUseItem);
 
 //			game.on(BreakBlockListener.EVENT, active::onBreak);
 //			game.on(UseBlockListener.EVENT, active::onUseBlock);
 //
-            game.on(PlayerDeathListener.EVENT, active::onDeath);
+            game.listen(PlayerDeathEvent.EVENT, active::onDeath);
 //
 //			game.on(GameCloseListener.EVENT, active::onClose);
 //
-            game.on(GameTickListener.EVENT, active::tick);
+            game.listen(GameActivityEvents.TICK, active::tick);
         });
     }
 
@@ -94,7 +97,7 @@ public class RsActive {
     }
 
     private void tick() {
-        ServerWorld world = this.space.getWorld();
+        ServerWorld world = this.world;
 
         if (world.getTime() % 30 == 0) {
             Random random = world.getRandom();
@@ -129,8 +132,7 @@ public class RsActive {
 
                 Vec3d dir = player.getRotationVec(1.0F);
 
-                FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * 4, dir.y * 4, dir.z * 4);
-                fireballEntity.explosionPower = 3;
+                FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * 4, dir.y * 4, dir.z * 4, 3);
                 fireballEntity.updatePosition(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
                 player.world.spawnEntity(fireballEntity);
 
@@ -144,8 +146,7 @@ public class RsActive {
 
                 Vec3d dir = player.getRotationVec(1.0F);
 
-                FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * 6, dir.y * 6, dir.z * 6);
-                fireballEntity.explosionPower = 1;
+                FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * 6, dir.y * 6, dir.z * 6, 1);
                 fireballEntity.updatePosition(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
                 player.world.spawnEntity(fireballEntity);
 
@@ -164,8 +165,7 @@ public class RsActive {
                     double dz = random.nextDouble() - random.nextDouble() * random.nextDouble() * 0.1;
                     Vec3d dir = player.getRotationVec(1.0F).multiply(dx, dy, dz);
 
-                    FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * 8, dir.y * 8, dir.z * 8);
-                    fireballEntity.explosionPower = 4 + random.nextInt(3);
+                    FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * 8, dir.y * 8, dir.z * 8, 4 + random.nextInt(3));
                     fireballEntity.updatePosition(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
                     player.world.spawnEntity(fireballEntity);
                 }
@@ -226,7 +226,7 @@ public class RsActive {
 
     private void open() {
         for (ServerPlayerEntity player : this.players) {
-            player.inventory.insertStack(ItemStackBuilder.of(Items.IRON_HOE).setUnbreakable().setName(new LiteralText("Fireball Cannon")).build());
+            player.getInventory().insertStack(ItemStackBuilder.of(Items.IRON_HOE).setUnbreakable().setName(new LiteralText("Fireball Cannon")).build());
         }
     }
 }

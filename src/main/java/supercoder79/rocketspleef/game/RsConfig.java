@@ -2,7 +2,7 @@ package supercoder79.rocketspleef.game;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import xyz.nucleoid.plasmid.game.config.PlayerConfig;
+import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
 
 public class RsConfig {
     public static final Codec<RsConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
