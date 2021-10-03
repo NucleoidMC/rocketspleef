@@ -30,7 +30,7 @@ dependencies {
     include "kdotjpg:open-simplex:2.0"
 
     // Plasmid
-    modImplementation "xyz.nucleoid:plasmid:0.5-pre35+1.17.1"
+    modImplementation "xyz.nucleoid:plasmid:0.5.11+1.17.1"
     modImplementation "xyz.nucleoid:substrate:0.1.1"
 
     modRuntime ("supercoder79:databreaker:0.2.7") {

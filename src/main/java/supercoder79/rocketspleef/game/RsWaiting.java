@@ -71,7 +71,7 @@ public final class RsWaiting {
 
         return context.openWithWorld(worldConfig, (game, world) -> {
             RsWaiting waiting = new RsWaiting(game.getGameSpace(), map, context.config(), world);
-            GameWaitingLobby.applyTo(game, context.config().playerConfig);
+            GameWaitingLobby.addTo(game, context.config().playerConfig);
 
             game.listen(GameActivityEvents.REQUEST_START, () -> waiting.requestStart(world));
             game.listen(PlayerDeathEvent.EVENT, waiting::onPlayerDeath);
