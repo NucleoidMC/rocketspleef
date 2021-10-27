@@ -4,7 +4,6 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.util.ActionResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import supercoder79.rocketspleef.RocketSpleef;
+import supercoder79.rocketspleef.item.RsItems;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 
@@ -28,17 +28,17 @@ public abstract class MixinItemEntity {
             // TODO: some sort of registry something for this
             Item item = this.getStack().getItem();
 
-            if (item == Items.IRON_HOE && player.getInventory().count(Items.IRON_HOE) > 0) {
+            if (item == RsItems.FIREBALL_CANNON && player.getInventory().count(RsItems.FIREBALL_CANNON) > 0) {
                 ci.cancel();
                 return;
             }
 
-            if (item == Items.GOLDEN_HOE && player.getInventory().count(Items.GOLDEN_HOE) > 0) {
+            if (item == RsItems.FAST_FIREBALL_CANNON && player.getInventory().count(RsItems.FAST_FIREBALL_CANNON) > 0) {
                 ci.cancel();
                 return;
             }
 
-            if (item == Items.DIAMOND_HOE && player.getInventory().count(Items.DIAMOND_HOE) > 0) {
+            if (item == RsItems.MULTI_FIREBALL_CANNON && player.getInventory().count(RsItems.MULTI_FIREBALL_CANNON) > 0) {
                 ci.cancel();
                 return;
             }

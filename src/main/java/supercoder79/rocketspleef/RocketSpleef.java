@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
 import supercoder79.rocketspleef.game.RsConfig;
 import supercoder79.rocketspleef.game.RsWaiting;
+import supercoder79.rocketspleef.item.RsItems;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 
@@ -18,5 +19,7 @@ public final class RocketSpleef implements ModInitializer {
                 RsConfig.CODEC,
                 RsWaiting::open
         );
+
+        RsItems.register();
     }
 }
