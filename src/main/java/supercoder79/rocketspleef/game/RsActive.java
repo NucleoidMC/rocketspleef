@@ -7,7 +7,6 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.EntityDamageSource;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
@@ -19,6 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import supercoder79.rocketspleef.RocketSpleef;
+import supercoder79.rocketspleef.item.RsItems;
 import supercoder79.rocketspleef.util.WeightedList;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameSpace;
@@ -27,7 +27,6 @@ import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
-import xyz.nucleoid.plasmid.util.ItemStackBuilder;
 import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
@@ -36,8 +35,8 @@ import java.util.Random;
 public class RsActive {
     private static final WeightedList<ItemStack> DROPS = new WeightedList<ItemStack>()
             .add(new ItemStack(Blocks.TNT), 10)
-            .add(ItemStackBuilder.of(Items.GOLDEN_HOE).setUnbreakable().setName(new LiteralText("Fast Fireball Cannon")).build(), 5)
-            .add(ItemStackBuilder.of(Items.DIAMOND_HOE).setUnbreakable().setName(new LiteralText("Multi Fireball Cannon")).build(), 1);
+            .add(new ItemStack(RsItems.FAST_FIREBALL_CANNON), 5)
+            .add(new ItemStack(RsItems.MULTI_FIREBALL_CANNON), 1);
 
     private final ServerWorld world;
     private final GameSpace space;
@@ -91,9 +90,9 @@ public class RsActive {
     }
 
     private static void cooldownAll(ServerPlayerEntity player, int ticks) {
-        player.getItemCooldownManager().set(Items.IRON_HOE, ticks);
-        player.getItemCooldownManager().set(Items.GOLDEN_HOE, ticks);
-        player.getItemCooldownManager().set(Items.DIAMOND_HOE, ticks);
+        player.getItemCooldownManager().set(RsItems.FIREBALL_CANNON, ticks);
+        player.getItemCooldownManager().set(RsItems.FAST_FIREBALL_CANNON, ticks);
+        player.getItemCooldownManager().set(RsItems.MULTI_FIREBALL_CANNON, ticks);
     }
 
     private void tick() {
@@ -126,7 +125,7 @@ public class RsActive {
     public TypedActionResult<ItemStack> onUseItem(ServerPlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
 
-        if (stack.getItem() == Items.IRON_HOE) {
+        if (stack.getItem() == RsItems.FIREBALL_CANNON) {
             if (!player.getItemCooldownManager().isCoolingDown(stack.getItem())) {
                 cooldownAll(player, 20);
 
@@ -140,7 +139,7 @@ public class RsActive {
             }
         }
 
-        if (stack.getItem() == Items.GOLDEN_HOE) {
+        if (stack.getItem() == RsItems.FAST_FIREBALL_CANNON) {
             if (!player.getItemCooldownManager().isCoolingDown(stack.getItem())) {
                 cooldownAll(player, 12);
 
@@ -154,7 +153,7 @@ public class RsActive {
             }
         }
 
-        if (stack.getItem() == Items.DIAMOND_HOE) {
+        if (stack.getItem() == RsItems.MULTI_FIREBALL_CANNON) {
             if (!player.getItemCooldownManager().isCoolingDown(stack.getItem())) {
                 cooldownAll(player, 70);
 
@@ -226,7 +225,7 @@ public class RsActive {
 
     private void open() {
         for (ServerPlayerEntity player : this.players) {
-            player.getInventory().insertStack(ItemStackBuilder.of(Items.IRON_HOE).setUnbreakable().setName(new LiteralText("Fireball Cannon")).build());
+            player.getInventory().insertStack(new ItemStack(RsItems.FIREBALL_CANNON));
         }
     }
 }
