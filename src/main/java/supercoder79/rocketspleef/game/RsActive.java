@@ -201,7 +201,7 @@ public class RsActive {
         }
 
         RsWaiting.resetPlayer(player, GameMode.SPECTATOR);
-        player.teleport(player.getServerWorld(), 0, 66, 0, 0.0F, 0.0F);
+        player.teleport(player.getWorld(), 0, 66, 0, 0.0F, 0.0F);
 
         long remaining = this.space.getPlayers().stream().filter(p -> p.interactionManager.getGameMode().isSurvivalLike()).count();
         if (remaining <= 1) {
