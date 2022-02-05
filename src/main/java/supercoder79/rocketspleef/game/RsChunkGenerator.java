@@ -7,12 +7,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.noise.PerlinNoiseSampler;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.GenerationStep;
-import net.minecraft.world.gen.SimpleRandom;
 import net.minecraft.world.gen.StructureAccessor;
+import net.minecraft.world.gen.chunk.Blender;
 import net.minecraft.world.gen.chunk.StructuresConfig;
+import net.minecraft.world.gen.random.SimpleRandom;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 
 import java.util.Collections;
@@ -30,7 +29,7 @@ public class RsChunkGenerator extends GameChunkGenerator {
     }
 
     @Override
-    public CompletableFuture<Chunk> populateNoise(Executor executor, StructureAccessor accessor, Chunk chunk) {
+    public CompletableFuture<Chunk> populateNoise(Executor executor, Blender blender, StructureAccessor accessor, Chunk chunk) {
         int startX = chunk.getPos().getStartX();
         int startZ = chunk.getPos().getStartZ();
 
@@ -76,10 +75,5 @@ public class RsChunkGenerator extends GameChunkGenerator {
         }
 
         return CompletableFuture.completedFuture(chunk);
-    }
-
-    @Override
-    public void carve(long seed, BiomeAccess access, Chunk chunk, GenerationStep.Carver carver) {
-
     }
 }
