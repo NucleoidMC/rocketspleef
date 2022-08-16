@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.11-SNAPSHOT'
+    id 'fabric-loom' version '0.12-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -30,10 +30,10 @@ dependencies {
     include "kdotjpg:open-simplex:2.0"
 
     // Plasmid
-    modImplementation "xyz.nucleoid:plasmid:0.5+1.18.2-SNAPSHOT"
+    modImplementation "xyz.nucleoid:plasmid:0.5+1.19.1-SNAPSHOT"
     modImplementation "xyz.nucleoid:substrate:0.1.1"
 
-    modRuntimeOnly ("supercoder79:databreaker:0.2.9") {
+    modRuntimeOnly ("supercoder79:databreaker:0.2.10") {
         exclude module : "fabric-loader"
     }
 
