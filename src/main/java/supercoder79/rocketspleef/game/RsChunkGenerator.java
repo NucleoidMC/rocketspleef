@@ -5,17 +5,17 @@ import net.minecraft.block.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.noise.PerlinNoiseSampler;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.Blender;
-import net.minecraft.world.gen.random.SimpleRandom;
+import net.minecraft.world.gen.noise.NoiseConfig;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -24,11 +24,11 @@ public class RsChunkGenerator extends GameChunkGenerator {
 
     public RsChunkGenerator(MinecraftServer server) {
         super(server.getRegistryManager().get(Registry.STRUCTURE_SET_KEY), Optional.empty(), createBiomeSource(server, BiomeKeys.PLAINS));
-        this.colorNoise = new PerlinNoiseSampler(new SimpleRandom(server.getOverworld().getSeed()));
+        this.colorNoise = new PerlinNoiseSampler(Random.create(server.getOverworld().getSeed()));
     }
 
     @Override
-    public CompletableFuture<Chunk> populateNoise(Executor executor, Blender blender, StructureAccessor accessor, Chunk chunk) {
+    public CompletableFuture<Chunk> populateNoise(Executor executor, Blender blender, NoiseConfig config, StructureAccessor accessor, Chunk chunk) {
         int startX = chunk.getPos().getStartX();
         int startZ = chunk.getPos().getStartZ();
 

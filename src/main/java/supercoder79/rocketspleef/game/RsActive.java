@@ -10,13 +10,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.GameMode;
 import supercoder79.rocketspleef.RocketSpleef;
 import supercoder79.rocketspleef.util.WeightedList;
@@ -31,13 +32,11 @@ import xyz.nucleoid.plasmid.util.ItemStackBuilder;
 import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
-import java.util.Random;
-
 public class RsActive {
     private static final WeightedList<ItemStack> DROPS = new WeightedList<ItemStack>()
             .add(new ItemStack(Blocks.TNT), 10)
-            .add(ItemStackBuilder.of(Items.GOLDEN_HOE).setUnbreakable().setName(new LiteralText("Fast Fireball Cannon")).build(), 5)
-            .add(ItemStackBuilder.of(Items.DIAMOND_HOE).setUnbreakable().setName(new LiteralText("Multi Fireball Cannon")).build(), 1);
+            .add(ItemStackBuilder.of(Items.GOLDEN_HOE).setUnbreakable().setName(Text.literal("Fast Fireball Cannon")).build(), 5)
+            .add(ItemStackBuilder.of(Items.DIAMOND_HOE).setUnbreakable().setName(Text.literal("Multi Fireball Cannon")).build(), 1);
 
     private final ServerWorld world;
     private final GameSpace space;
@@ -191,13 +190,13 @@ public class RsActive {
 
     public ActionResult onDeath(ServerPlayerEntity player, DamageSource source) {
         if (source instanceof EntityDamageSource) {
-            this.space.getPlayers().sendMessage(new LiteralText(Formatting.RED + player.getEntityName() + " was slain by " + source.getAttacker().getEntityName()));
+            this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " was slain by " + source.getAttacker().getEntityName()));
         } else if (source.isOutOfWorld()) {
-            this.space.getPlayers().sendMessage(new LiteralText(Formatting.RED + player.getEntityName() + " fell out of the world"));
+            this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " fell out of the world"));
         } else if (source.isExplosive()) {
-            this.space.getPlayers().sendMessage(new LiteralText(Formatting.RED + player.getEntityName() + " exploded"));
+            this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " exploded"));
         } else {
-            this.space.getPlayers().sendMessage(new LiteralText(Formatting.RED + player.getEntityName() + " died"));
+            this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " died"));
         }
 
         RsWaiting.resetPlayer(player, GameMode.SPECTATOR);
@@ -207,14 +206,14 @@ public class RsActive {
         if (remaining <= 1) {
 
             if (remaining <= 0) {
-                this.space.getPlayers().sendMessage(new LiteralText(Formatting.AQUA + "RocketSpleef has finished!"));
+                this.space.getPlayers().sendMessage(Text.literal(Formatting.AQUA + "RocketSpleef has finished!"));
             } else {
                 ServerPlayerEntity lastPlayer = this.space.getPlayers().stream().filter(p -> p.interactionManager.getGameMode().isSurvivalLike()).findFirst().orElse(null);
                 if (lastPlayer != null) {
-                    this.space.getPlayers().sendMessage(new LiteralText(Formatting.GOLD + lastPlayer.getEntityName() + " has won!"));
-                    this.space.getPlayers().sendMessage(new LiteralText(Formatting.AQUA + "RocketSpleef has finished!"));
+                    this.space.getPlayers().sendMessage(Text.literal(Formatting.GOLD + lastPlayer.getEntityName() + " has won!"));
+                    this.space.getPlayers().sendMessage(Text.literal(Formatting.AQUA + "RocketSpleef has finished!"));
                 } else {
-                    this.space.getPlayers().sendMessage(new LiteralText(Formatting.AQUA + "RocketSpleef has finished!"));
+                    this.space.getPlayers().sendMessage(Text.literal(Formatting.AQUA + "RocketSpleef has finished!"));
                 }
             }
 
@@ -226,7 +225,7 @@ public class RsActive {
 
     private void open() {
         for (ServerPlayerEntity player : this.players) {
-            player.getInventory().insertStack(ItemStackBuilder.of(Items.IRON_HOE).setUnbreakable().setName(new LiteralText("Fireball Cannon")).build());
+            player.getInventory().insertStack(ItemStackBuilder.of(Items.IRON_HOE).setUnbreakable().setName(Text.literal("Fireball Cannon")).build());
         }
     }
 }
