@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.12-SNAPSHOT'
+    id 'fabric-loom' version '1.0.+'
     id 'maven-publish'
 }
 
@@ -30,12 +30,8 @@ dependencies {
     include "kdotjpg:open-simplex:2.0"
 
     // Plasmid
-    modImplementation "xyz.nucleoid:plasmid:0.5+1.19.1-SNAPSHOT"
-    modImplementation "xyz.nucleoid:substrate:0.1.1"
-
-    modRuntimeOnly ("supercoder79:databreaker:0.2.10") {
-        exclude module : "fabric-loader"
-    }
+    modImplementation "xyz.nucleoid:plasmid:0.5+1.19.3-SNAPSHOT"
+    modImplementation "xyz.nucleoid:substrate:0.2.0"
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.

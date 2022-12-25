@@ -6,7 +6,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.noise.PerlinNoiseSampler;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.chunk.Chunk;
@@ -15,7 +14,6 @@ import net.minecraft.world.gen.chunk.Blender;
 import net.minecraft.world.gen.noise.NoiseConfig;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -23,7 +21,7 @@ public class RsChunkGenerator extends GameChunkGenerator {
     private final PerlinNoiseSampler colorNoise;
 
     public RsChunkGenerator(MinecraftServer server) {
-        super(server.getRegistryManager().get(Registry.STRUCTURE_SET_KEY), Optional.empty(), createBiomeSource(server, BiomeKeys.PLAINS));
+        super(createBiomeSource(server, BiomeKeys.PLAINS));
         this.colorNoise = new PerlinNoiseSampler(Random.create(server.getOverworld().getSeed()));
     }
 
