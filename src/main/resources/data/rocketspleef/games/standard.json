@@ -1,6 +1,7 @@
 {
   "type": "rocketspleef:rocketspleef",
   "name": "Rocket Spleef",
+  "icon": "minecraft:fire_charge",
   "players": {
     "min": 1,
     "max": 16,
