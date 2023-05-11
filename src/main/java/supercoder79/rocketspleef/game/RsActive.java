@@ -4,10 +4,11 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.EntityDamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -189,11 +190,11 @@ public class RsActive {
     }
 
     public ActionResult onDeath(ServerPlayerEntity player, DamageSource source) {
-        if (source instanceof EntityDamageSource) {
+        if (source.getAttacker() != null) {
             this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " was slain by " + source.getAttacker().getEntityName()));
-        } else if (source.isOutOfWorld()) {
+        } else if (source.isOf(DamageTypes.OUT_OF_WORLD)) {
             this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " fell out of the world"));
-        } else if (source.isExplosive()) {
+        } else if (source.isIn(DamageTypeTags.IS_EXPLOSION)) {
             this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " exploded"));
         } else {
             this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " died"));
