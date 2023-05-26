@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.0.+'
+    id 'fabric-loom' version '1.1.+'
     id 'maven-publish'
 }
 
@@ -11,10 +11,10 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
-    mavenLocal()
     maven { url = "https://jitpack.io/" }
     maven { url = "https://maven.gegy.dev/" }
     maven { url = "https://maven.nucleoid.xyz"}
+    //mavenLocal()
 }
 
 dependencies {
@@ -31,7 +31,7 @@ dependencies {
 
     // Plasmid
     modImplementation "xyz.nucleoid:plasmid:0.5+1.19.4-SNAPSHOT"
-    modImplementation "xyz.nucleoid:substrate:0.2.0"
+    modImplementation "xyz.nucleoid:substrate:0.2.1+1.19.4"
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.

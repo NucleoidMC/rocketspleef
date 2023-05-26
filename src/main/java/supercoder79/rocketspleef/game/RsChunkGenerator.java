@@ -64,7 +64,7 @@ public class RsChunkGenerator extends GameChunkGenerator {
                         }
 
                         if (manhattan == 11 && ((x - 1) % 2 == 0 && (z - 1) % 2 == 0 && (y - 1) % 2 == 0)) {
-                            chunk.setBlockState(new BlockPos(x, y, z), glass .getDefaultState(), false);
+                            chunk.setBlockState(new BlockPos(x, y, z), glass.getDefaultState(), false);
                         }
                     }
                 }

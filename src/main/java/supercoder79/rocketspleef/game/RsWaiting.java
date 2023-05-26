@@ -64,6 +64,7 @@ public final class RsWaiting {
 
         RuntimeWorldConfig worldConfig = new RuntimeWorldConfig()
                 .setTimeOfDay(6000)
+                .setWorldConstructor(FakeFlatWorld::new)
                 .setGenerator(map.createGenerator(context.server()));
 
 

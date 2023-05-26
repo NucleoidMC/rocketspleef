@@ -4,11 +4,10 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.projectile.FireballEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -90,10 +89,8 @@ public class RsActive {
         });
     }
 
-    private static void cooldownAll(ServerPlayerEntity player, int ticks) {
-        player.getItemCooldownManager().set(Items.IRON_HOE, ticks);
-        player.getItemCooldownManager().set(Items.GOLDEN_HOE, ticks);
-        player.getItemCooldownManager().set(Items.DIAMOND_HOE, ticks);
+    private static void cooldown(ServerPlayerEntity player, Item item, int ticks) {
+        player.getItemCooldownManager().set(item, ticks);
     }
 
     private void tick() {
@@ -128,7 +125,7 @@ public class RsActive {
 
         if (stack.getItem() == Items.IRON_HOE) {
             if (!player.getItemCooldownManager().isCoolingDown(stack.getItem())) {
-                cooldownAll(player, 20);
+                cooldown(player, stack.getItem(), 20);
 
                 Vec3d dir = player.getRotationVec(1.0F);
 
@@ -142,7 +139,7 @@ public class RsActive {
 
         if (stack.getItem() == Items.GOLDEN_HOE) {
             if (!player.getItemCooldownManager().isCoolingDown(stack.getItem())) {
-                cooldownAll(player, 12);
+                cooldown(player, stack.getItem(),12);
 
                 Vec3d dir = player.getRotationVec(1.0F);
 
@@ -156,7 +153,7 @@ public class RsActive {
 
         if (stack.getItem() == Items.DIAMOND_HOE) {
             if (!player.getItemCooldownManager().isCoolingDown(stack.getItem())) {
-                cooldownAll(player, 70);
+                cooldown(player, stack.getItem(), 70);
 
                 Random random = player.getRandom();
                 for (int i = 0; i < 4; i++) {
@@ -170,6 +167,28 @@ public class RsActive {
                     player.world.spawnEntity(fireballEntity);
                 }
 
+
+                /*var yaw = player.getYaw();
+                var pitch = player.getPitch();
+                float multDir = 64;
+                float multSide = 60;
+                /*{
+                    Vec3d dir = Vec3d.fromPolar(pitch, yaw);
+
+                    FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * multDir, dir.y * multDir, dir.z * multDir, 4);
+                    fireballEntity.updatePosition(player.getX() + dir.x * 0.5, player.getEyeY() + dir.y * 0.5, fireballEntity.getZ() + dir.z * 0.5);
+                    player.world.spawnEntity(fireballEntity);
+                }
+                for (int x = 0; x < 2; x++) {
+                    for (int y = 0; y < 2; y++) {
+                        Vec3d dir = Vec3d.fromPolar((y - 0.5f) * 16, (x - 0.5f) * 16).rotateY(pitch).rotateX(yaw);
+
+                        FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * multSide, dir.y * multSide, dir.z * multSide, 2 + random.nextInt(2));
+
+                        fireballEntity.updatePosition(player.getX() + dir.x * 1.2, player.getEyeY() + dir.y * 1.2, fireballEntity.getZ() + dir.z * 1.2);
+                        player.world.spawnEntity(fireballEntity);
+                    }
+                }*/
 
                 return TypedActionResult.success(stack);
             }
@@ -190,35 +209,27 @@ public class RsActive {
     }
 
     public ActionResult onDeath(ServerPlayerEntity player, DamageSource source) {
-        if (source.getAttacker() != null) {
-            this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " was slain by " + source.getAttacker().getEntityName()));
-        } else if (source.isOf(DamageTypes.OUT_OF_WORLD)) {
-            this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " fell out of the world"));
-        } else if (source.isIn(DamageTypeTags.IS_EXPLOSION)) {
-            this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " exploded"));
-        } else {
-            this.space.getPlayers().sendMessage(Text.literal(Formatting.RED + player.getEntityName() + " died"));
+        if (player.isSpectator() || this.gameEndTimer != -1) {
+            player.teleport(player.getWorld(), 0, 66, 0, 0.0F, 0.0F);
+            RsWaiting.resetPlayer(player, GameMode.SPECTATOR);
+            return ActionResult.FAIL;
         }
+
+        this.space.getPlayers().sendMessage(Text.empty().formatted(Formatting.RED).append(source.getDeathMessage(player)));
 
         RsWaiting.resetPlayer(player, GameMode.SPECTATOR);
         player.teleport(player.getWorld(), 0, 66, 0, 0.0F, 0.0F);
 
         long remaining = this.space.getPlayers().stream().filter(p -> p.interactionManager.getGameMode().isSurvivalLike()).count();
         if (remaining <= 1) {
-
-            if (remaining <= 0) {
-                this.space.getPlayers().sendMessage(Text.literal(Formatting.AQUA + "RocketSpleef has finished!"));
-            } else {
+            if (remaining == 1) {
                 ServerPlayerEntity lastPlayer = this.space.getPlayers().stream().filter(p -> p.interactionManager.getGameMode().isSurvivalLike()).findFirst().orElse(null);
                 if (lastPlayer != null) {
-                    this.space.getPlayers().sendMessage(Text.literal(Formatting.GOLD + lastPlayer.getEntityName() + " has won!"));
-                    this.space.getPlayers().sendMessage(Text.literal(Formatting.AQUA + "RocketSpleef has finished!"));
-                } else {
-                    this.space.getPlayers().sendMessage(Text.literal(Formatting.AQUA + "RocketSpleef has finished!"));
+                    this.space.getPlayers().sendMessage(Text.translatable("text.rocket_spleef.player_won", lastPlayer.getEntityName()).formatted(Formatting.GOLD));
                 }
             }
-
-            this.gameEndTimer = 200;
+            this.space.getPlayers().sendMessage(Text.translatable("text.rocket_spleef.game_ended").formatted(Formatting.AQUA));
+            this.gameEndTimer = 20 * 5;
         }
 
         return ActionResult.FAIL;
