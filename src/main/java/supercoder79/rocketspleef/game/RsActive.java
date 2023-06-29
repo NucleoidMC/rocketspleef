@@ -129,9 +129,9 @@ public class RsActive {
 
                 Vec3d dir = player.getRotationVec(1.0F);
 
-                FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * 4, dir.y * 4, dir.z * 4, 3);
+                FireballEntity fireballEntity = new FireballEntity(player.getWorld(), player, dir.x * 4, dir.y * 4, dir.z * 4, 3);
                 fireballEntity.updatePosition(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
-                player.world.spawnEntity(fireballEntity);
+                player.getWorld().spawnEntity(fireballEntity);
 
                 return TypedActionResult.success(stack);
             }
@@ -143,9 +143,9 @@ public class RsActive {
 
                 Vec3d dir = player.getRotationVec(1.0F);
 
-                FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * 6, dir.y * 6, dir.z * 6, 1);
+                FireballEntity fireballEntity = new FireballEntity(player.getWorld(), player, dir.x * 6, dir.y * 6, dir.z * 6, 1);
                 fireballEntity.updatePosition(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
-                player.world.spawnEntity(fireballEntity);
+                player.getWorld().spawnEntity(fireballEntity);
 
                 return TypedActionResult.success(stack);
             }
@@ -162,9 +162,9 @@ public class RsActive {
                     double dz = random.nextDouble() - random.nextDouble() * random.nextDouble() * 0.1;
                     Vec3d dir = player.getRotationVec(1.0F).multiply(dx, dy, dz);
 
-                    FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * 8, dir.y * 8, dir.z * 8, 4 + random.nextInt(3));
+                    FireballEntity fireballEntity = new FireballEntity(player.getWorld(), player, dir.x * 8, dir.y * 8, dir.z * 8, 4 + random.nextInt(3));
                     fireballEntity.updatePosition(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
-                    player.world.spawnEntity(fireballEntity);
+                    player.getWorld().spawnEntity(fireballEntity);
                 }
 
 
@@ -175,18 +175,18 @@ public class RsActive {
                 /*{
                     Vec3d dir = Vec3d.fromPolar(pitch, yaw);
 
-                    FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * multDir, dir.y * multDir, dir.z * multDir, 4);
+                    FireballEntity fireballEntity = new FireballEntity(player.getWorld(), player, dir.x * multDir, dir.y * multDir, dir.z * multDir, 4);
                     fireballEntity.updatePosition(player.getX() + dir.x * 0.5, player.getEyeY() + dir.y * 0.5, fireballEntity.getZ() + dir.z * 0.5);
-                    player.world.spawnEntity(fireballEntity);
+                    player.getWorld().spawnEntity(fireballEntity);
                 }
                 for (int x = 0; x < 2; x++) {
                     for (int y = 0; y < 2; y++) {
                         Vec3d dir = Vec3d.fromPolar((y - 0.5f) * 16, (x - 0.5f) * 16).rotateY(pitch).rotateX(yaw);
 
-                        FireballEntity fireballEntity = new FireballEntity(player.world, player, dir.x * multSide, dir.y * multSide, dir.z * multSide, 2 + random.nextInt(2));
+                        FireballEntity fireballEntity = new FireballEntity(player.getWorld(), player, dir.x * multSide, dir.y * multSide, dir.z * multSide, 2 + random.nextInt(2));
 
                         fireballEntity.updatePosition(player.getX() + dir.x * 1.2, player.getEyeY() + dir.y * 1.2, fireballEntity.getZ() + dir.z * 1.2);
-                        player.world.spawnEntity(fireballEntity);
+                        player.getWorld().spawnEntity(fireballEntity);
                     }
                 }*/
 
@@ -198,9 +198,9 @@ public class RsActive {
 
             Vec3d dir = player.getRotationVec(1.0F);
 
-            TntEntity tnt = new TntEntity(player.world, player.getX() + dir.x, player.getEyeY() + dir.y, player.getZ() + dir.z, player);
+            TntEntity tnt = new TntEntity(player.getWorld(), player.getX() + dir.x, player.getEyeY() + dir.y, player.getZ() + dir.z, player);
             tnt.setVelocity(dir.x * 1.2, dir.y * 1.2, dir.z * 1.2);
-            player.world.spawnEntity(tnt);
+            player.getWorld().spawnEntity(tnt);
 
             stack.decrement(1);
         }
@@ -210,7 +210,7 @@ public class RsActive {
 
     public ActionResult onDeath(ServerPlayerEntity player, DamageSource source) {
         if (player.isSpectator() || this.gameEndTimer != -1) {
-            player.teleport(player.getWorld(), 0, 66, 0, 0.0F, 0.0F);
+            player.teleport(player.getServerWorld(), 0, 66, 0, 0.0F, 0.0F);
             RsWaiting.resetPlayer(player, GameMode.SPECTATOR);
             return ActionResult.FAIL;
         }
@@ -218,7 +218,7 @@ public class RsActive {
         this.space.getPlayers().sendMessage(Text.empty().formatted(Formatting.RED).append(source.getDeathMessage(player)));
 
         RsWaiting.resetPlayer(player, GameMode.SPECTATOR);
-        player.teleport(player.getWorld(), 0, 66, 0, 0.0F, 0.0F);
+        player.teleport(player.getServerWorld(), 0, 66, 0, 0.0F, 0.0F);
 
         long remaining = this.space.getPlayers().stream().filter(p -> p.interactionManager.getGameMode().isSurvivalLike()).count();
         if (remaining <= 1) {
