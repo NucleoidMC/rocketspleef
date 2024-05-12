@@ -220,10 +220,10 @@ public class RsActive {
         RsWaiting.resetPlayer(player, GameMode.SPECTATOR);
         player.teleport(player.getServerWorld(), 0, 66, 0, 0.0F, 0.0F);
 
-        long remaining = this.space.getPlayers().stream().filter(p -> p.interactionManager.getGameMode().isSurvivalLike()).count();
+        long remaining = this.space.getPlayers().stream().filter(p -> p.interactionManager.isSurvivalLike()).count();
         if (remaining <= 1) {
             if (remaining == 1) {
-                ServerPlayerEntity lastPlayer = this.space.getPlayers().stream().filter(p -> p.interactionManager.getGameMode().isSurvivalLike()).findFirst().orElse(null);
+                ServerPlayerEntity lastPlayer = this.space.getPlayers().stream().filter(p -> p.interactionManager.isSurvivalLike()).findFirst().orElse(null);
                 if (lastPlayer != null) {
                     this.space.getPlayers().sendMessage(Text.translatable("text.rocket_spleef.player_won", lastPlayer.getEntityName()).formatted(Formatting.GOLD));
                 }
