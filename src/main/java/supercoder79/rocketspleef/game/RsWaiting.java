@@ -86,7 +86,7 @@ public final class RsWaiting {
         player.getHungerManager().setFoodLevel(20);
         player.getHungerManager().add(5, 0.5F);
         player.fallDistance = 0.0F;
-        player.interactionManager.changeGameMode(mode);
+        player.changeGameMode(mode);
         player.setExperienceLevel(0);
         player.setExperiencePoints(0);
     }
