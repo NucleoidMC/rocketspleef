@@ -10,11 +10,14 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameMode;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
-import xyz.nucleoid.plasmid.game.*;
-import xyz.nucleoid.plasmid.game.common.GameWaitingLobby;
-import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
-import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.api.game.*;
+import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
+import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
+import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
+
+import java.util.Set;
 
 public final class RsWaiting {
     private final ServerWorld world;
@@ -70,11 +73,11 @@ public final class RsWaiting {
 
         return context.openWithWorld(worldConfig, (game, world) -> {
             RsWaiting waiting = new RsWaiting(game.getGameSpace(), map, context.config(), world);
-            GameWaitingLobby.addTo(game, context.config().playerConfig);
+            GameWaitingLobby.addTo(game, context.config().playerConfig());
 
             game.listen(GameActivityEvents.REQUEST_START, () -> waiting.requestStart(world));
             game.listen(PlayerDeathEvent.EVENT, waiting::onPlayerDeath);
-            game.listen(GamePlayerEvents.OFFER, offer -> offer.accept(world, new Vec3d(0, 70, 0)));
+            game.listen(GamePlayerEvents.ACCEPT, offer -> offer.teleport(world, new Vec3d(0, 70, 0)));
         });
     }
 
@@ -100,9 +103,9 @@ public final class RsWaiting {
         this.spawnPlayer(player);
     }
 
-    private ActionResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
+    private EventResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
         this.spawnPlayer(player);
-        return ActionResult.FAIL;
+        return EventResult.DENY;
     }
 
     private void spawnPlayer(ServerPlayerEntity player) {
@@ -111,6 +114,6 @@ public final class RsWaiting {
         ChunkPos chunkPos = new ChunkPos(0, 0);
         this.world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
 
-        player.teleport(this.world, 0, 66, 0, 0.0F, 0.0F);
+        player.teleport(this.world, 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
     }
 }

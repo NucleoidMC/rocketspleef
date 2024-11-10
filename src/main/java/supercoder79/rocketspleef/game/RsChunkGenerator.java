@@ -12,7 +12,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.Blender;
 import net.minecraft.world.gen.noise.NoiseConfig;
-import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
+import xyz.nucleoid.plasmid.api.game.world.generator.GameChunkGenerator;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -26,7 +26,7 @@ public class RsChunkGenerator extends GameChunkGenerator {
     }
 
     @Override
-    public CompletableFuture<Chunk> populateNoise(Executor executor, Blender blender, NoiseConfig config, StructureAccessor accessor, Chunk chunk) {
+    public CompletableFuture<Chunk> populateNoise(Blender blender, NoiseConfig noiseConfig, StructureAccessor structureAccessor, Chunk chunk) {
         int startX = chunk.getPos().getStartX();
         int startZ = chunk.getPos().getStartZ();
 

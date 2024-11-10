@@ -4,8 +4,8 @@ import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
 import supercoder79.rocketspleef.game.RsConfig;
 import supercoder79.rocketspleef.game.RsWaiting;
-import xyz.nucleoid.plasmid.game.GameType;
-import xyz.nucleoid.plasmid.game.rule.GameRuleType;
+import xyz.nucleoid.plasmid.api.game.GameType;
+import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
 
 public final class RocketSpleef implements ModInitializer {
     public static final GameRuleType REDUCE_EXPLOSION_DAMAGE = GameRuleType.create();
@@ -14,7 +14,7 @@ public final class RocketSpleef implements ModInitializer {
     @Override
     public void onInitialize() {
         GameType.register(
-                new Identifier("rocketspleef", "rocketspleef"),
+                Identifier.of("rocketspleef", "rocketspleef"),
                 RsConfig.CODEC,
                 RsWaiting::open
         );
