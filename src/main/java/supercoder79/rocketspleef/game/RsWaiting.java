@@ -2,6 +2,7 @@ package supercoder79.rocketspleef.game;
 
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ChunkTicket;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
@@ -112,7 +113,7 @@ public final class RsWaiting {
         resetPlayer(player, GameMode.SURVIVAL);
 
         ChunkPos chunkPos = new ChunkPos(0, 0);
-        this.world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
+        this.world.getChunkManager().addTicket(new ChunkTicket(ChunkTicketType.START, 1), chunkPos);
 
         player.teleport(this.world, 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
     }
