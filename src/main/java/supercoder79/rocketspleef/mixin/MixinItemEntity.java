@@ -21,7 +21,7 @@ public abstract class MixinItemEntity {
 
     @Inject(method = "onPlayerCollision", at = @At("HEAD"), cancellable = true)
     private void rejectPlayersWithItem(PlayerEntity player, CallbackInfo ci) {
-        var gameSpace = GameSpaceManager.get().byWorld(player.getEntityWorld());
+        var gameSpace = GameSpaceManager.get().byWorld(player.getWorld());
 
         if (gameSpace != null && gameSpace.getBehavior().testRule(RocketSpleef.REJECT_ITEMS) == EventResult.ALLOW) {
             // TODO: some sort of registry something for this

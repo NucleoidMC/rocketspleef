@@ -110,7 +110,7 @@ public class RsActive {
 
         for (ServerPlayerEntity player : this.space.getPlayers()) {
             if (player.getY() < 16 && player.isAlive() && !player.isSpectator()) {
-                player.kill(player.getServerWorld());
+                player.kill(player.getWorld());
             }
         }
 
@@ -213,7 +213,7 @@ public class RsActive {
 
     public EventResult onDeath(ServerPlayerEntity player, DamageSource source) {
         if (player.isSpectator() || this.gameEndTimer != -1) {
-            player.teleport(player.getServerWorld(), 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
+            player.teleport(player.getWorld(), 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
             RsWaiting.resetPlayer(player, GameMode.SPECTATOR);
             return EventResult.DENY;
         }
@@ -221,7 +221,7 @@ public class RsActive {
         this.space.getPlayers().sendMessage(Text.empty().formatted(Formatting.RED).append(source.getDeathMessage(player)));
 
         RsWaiting.resetPlayer(player, GameMode.SPECTATOR);
-        player.teleport(player.getServerWorld(), 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
+        player.teleport(player.getWorld(), 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
 
         long remaining = this.space.getPlayers().stream().filter(p -> p.interactionManager.isSurvivalLike()).count();
         if (remaining <= 1) {
