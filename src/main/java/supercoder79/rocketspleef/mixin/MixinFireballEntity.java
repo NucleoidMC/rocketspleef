@@ -1,22 +1,28 @@
 package supercoder79.rocketspleef.mixin;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.server.world.ServerWorld;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import supercoder79.rocketspleef.RocketSpleef;
 import xyz.nucleoid.plasmid.api.game.GameSpaceManager;
 import xyz.nucleoid.stimuli.event.EventResult;
 
-@Mixin(FireballEntity.class)
+@Mixin(LargeFireball.class)
 public class MixinFireballEntity {
-    @WrapWithCondition(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z"))
-    private boolean noDamage(Entity instance, ServerWorld serverWorld, DamageSource source, float v) {
-        var gameSpace = GameSpaceManager.get().byWorld(serverWorld);
+    @WrapOperation(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;hurtServer(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
+    private boolean noDamage(Entity instance, ServerLevel serverWorld, DamageSource source, float v, Operation<Boolean> original) {
+        var gameSpace = GameSpaceManager.get().byLevel(serverWorld);
 
-        return gameSpace == null || gameSpace.getBehavior().testRule(RocketSpleef.REDUCE_EXPLOSION_DAMAGE) != EventResult.ALLOW;
+        if (gameSpace == null || gameSpace.getBehavior().testRule(RocketSpleef.REDUCE_EXPLOSION_DAMAGE) != EventResult.ALLOW) {
+            return original.call(instance, serverWorld, source, v);
+        } else {
+            return false;
+        }
     }
 }

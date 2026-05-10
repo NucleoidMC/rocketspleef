@@ -1,10 +1,11 @@
 package supercoder79.rocketspleef;
 
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import supercoder79.rocketspleef.game.RsConfig;
 import supercoder79.rocketspleef.game.RsWaiting;
 import xyz.nucleoid.plasmid.api.game.GameType;
+import xyz.nucleoid.plasmid.api.game.GameTypes;
 import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
 
 public final class RocketSpleef implements ModInitializer {
@@ -13,8 +14,8 @@ public final class RocketSpleef implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        GameType.register(
-                Identifier.of("rocketspleef", "rocketspleef"),
+        GameTypes.register(
+                Identifier.fromNamespaceAndPath("rocketspleef", "rocketspleef"),
                 RsConfig.CODEC,
                 RsWaiting::open
         );

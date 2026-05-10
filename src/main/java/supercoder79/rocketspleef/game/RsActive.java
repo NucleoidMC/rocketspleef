@@ -1,23 +1,5 @@
 package supercoder79.rocketspleef.game;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.TntEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.GameMode;
 import supercoder79.rocketspleef.RocketSpleef;
 import supercoder79.rocketspleef.util.WeightedList;
 import xyz.nucleoid.plasmid.api.game.GameCloseReason;
@@ -34,21 +16,38 @@ import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 import java.util.Set;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 
 public class RsActive {
     private static final WeightedList<ItemStack> DROPS = new WeightedList<ItemStack>()
             .add(new ItemStack(Blocks.TNT), 10)
-            .add(ItemStackBuilder.of(Items.GOLDEN_HOE).setUnbreakable().setName(Text.literal("Fast Fireball Cannon")).build(), 5)
-            .add(ItemStackBuilder.of(Items.DIAMOND_HOE).setUnbreakable().setName(Text.literal("Multi Fireball Cannon")).build(), 1);
+            .add(ItemStackBuilder.of(Items.GOLDEN_HOE).setUnbreakable().setName(Component.literal("Fast Fireball Cannon")).build(), 5)
+            .add(ItemStackBuilder.of(Items.DIAMOND_HOE).setUnbreakable().setName(Component.literal("Multi Fireball Cannon")).build(), 1);
 
-    private final ServerWorld world;
+    private final ServerLevel world;
     private final GameSpace space;
     private final RsMap map;
     private final RsConfig config;
     private final GlobalWidgets widgets;
     private long gameEndTimer = -1;
 
-    public RsActive(ServerWorld world, GameSpace space, RsMap map, RsConfig config, PlayerSet players, GlobalWidgets widgets) {
+    public RsActive(ServerLevel world, GameSpace space, RsMap map, RsConfig config, PlayerSet players, GlobalWidgets widgets) {
         this.world = world;
         this.space = space;
         this.map = map;
@@ -56,7 +55,7 @@ public class RsActive {
         this.widgets = widgets;
     }
 
-    public static void open(ServerWorld world, GameSpace space, RsMap map, RsConfig config) {
+    public static void open(ServerLevel world, GameSpace space, RsMap map, RsConfig config) {
         space.setActivity(game -> {
             GlobalWidgets widgets = GlobalWidgets.addTo(game);
             RsActive active = new RsActive(world, space, map, config, space.getPlayers().participants(), widgets);
@@ -76,7 +75,7 @@ public class RsActive {
 
             game.listen(GameActivityEvents.CREATE, active::open);
             game.listen(GamePlayerEvents.OFFER, offer -> offer.intent() == JoinIntent.SPECTATE ? offer.accept() : offer.pass());
-            game.listen(GamePlayerEvents.ACCEPT, offer -> offer.teleport(world, new Vec3d(0, 70, 0)));
+            game.listen(GamePlayerEvents.ACCEPT, offer -> offer.teleport(world, new Vec3(0, 70, 0)));
             game.listen(GamePlayerEvents.ADD, player -> {});
 
             game.listen(ItemUseEvent.EVENT, active::onUseItem);
@@ -92,25 +91,25 @@ public class RsActive {
         });
     }
 
-    private static void cooldown(ServerPlayerEntity player, ItemStack item, int ticks) {
-        player.getItemCooldownManager().set(item, ticks);
+    private static void cooldown(ServerPlayer player, ItemStack item, int ticks) {
+        player.getCooldowns().addCooldown(item, ticks);
     }
 
     private void tick() {
-        ServerWorld world = this.world;
+        ServerLevel world = this.world;
 
-        if (world.getTime() % 30 == 0) {
-            Random random = world.getRandom();
+        if (world.getGameTime() % 30 == 0) {
+            RandomSource random = world.getRandom();
             BlockPos pos = new BlockPos(random.nextInt(32) - random.nextInt(32), 64 + (random.nextInt(32) - random.nextInt(32)), random.nextInt(32) - random.nextInt(32));
 
             if (world.getBlockState(pos).isAir()) {
-                world.spawnEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), DROPS.pickRandom(random).copy()));
+                world.addFreshEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), DROPS.pickRandom(random).copy()));
             }
         }
 
-        for (ServerPlayerEntity player : this.space.getPlayers()) {
+        for (ServerPlayer player : this.space.getPlayers()) {
             if (player.getY() < 16 && player.isAlive() && !player.isSpectator()) {
-                player.kill(player.getWorld());
+                player.kill(player.level());
             }
         }
 
@@ -123,51 +122,51 @@ public class RsActive {
         }
     }
 
-    public ActionResult onUseItem(ServerPlayerEntity player, Hand hand) {
-        ItemStack stack = player.getStackInHand(hand);
+    public InteractionResult onUseItem(ServerPlayer player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
 
         if (stack.getItem() == Items.IRON_HOE) {
-            if (!player.getItemCooldownManager().isCoolingDown(stack)) {
+            if (!player.getCooldowns().isOnCooldown(stack)) {
                 cooldown(player, stack, 20);
 
-                Vec3d dir = player.getRotationVec(1.0F);
+                Vec3 dir = player.getViewVector(1.0F);
 
-                FireballEntity fireballEntity = new FireballEntity(player.getWorld(), player, new Vec3d(dir.x * 4, dir.y * 4, dir.z * 4), 3);
-                fireballEntity.updatePosition(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
-                player.getWorld().spawnEntity(fireballEntity);
+                LargeFireball fireballEntity = new LargeFireball(player.level(), player, new Vec3(dir.x * 4, dir.y * 4, dir.z * 4), 3);
+                fireballEntity.absSnapTo(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
+                player.level().addFreshEntity(fireballEntity);
 
-                return ActionResult.SUCCESS_SERVER;
+                return InteractionResult.SUCCESS_SERVER;
             }
         }
 
         if (stack.getItem() == Items.GOLDEN_HOE) {
-            if (!player.getItemCooldownManager().isCoolingDown(stack)) {
+            if (!player.getCooldowns().isOnCooldown(stack)) {
                 cooldown(player, stack,12);
 
-                Vec3d dir = player.getRotationVec(1.0F);
+                Vec3 dir = player.getViewVector(1.0F);
 
-                FireballEntity fireballEntity = new FireballEntity(player.getWorld(), player, dir.multiply(6), 1);
-                fireballEntity.updatePosition(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
-                player.getWorld().spawnEntity(fireballEntity);
+                LargeFireball fireballEntity = new LargeFireball(player.level(), player, dir.scale(6), 1);
+                fireballEntity.absSnapTo(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
+                player.level().addFreshEntity(fireballEntity);
 
-                return ActionResult.SUCCESS_SERVER;
+                return InteractionResult.SUCCESS_SERVER;
             }
         }
 
         if (stack.getItem() == Items.DIAMOND_HOE) {
-            if (!player.getItemCooldownManager().isCoolingDown(stack)) {
+            if (!player.getCooldowns().isOnCooldown(stack)) {
                 cooldown(player, stack, 70);
 
-                Random random = player.getRandom();
+                RandomSource random = player.getRandom();
                 for (int i = 0; i < 4; i++) {
                     double dx = random.nextDouble() - random.nextDouble() * random.nextDouble() * 0.1;
                     double dy = random.nextDouble() - random.nextDouble() * random.nextDouble() * 0.1;
                     double dz = random.nextDouble() - random.nextDouble() * random.nextDouble() * 0.1;
-                    Vec3d dir = player.getRotationVec(1.0F).multiply(dx, dy, dz);
+                    Vec3 dir = player.getViewVector(1.0F).multiply(dx, dy, dz);
 
-                    FireballEntity fireballEntity = new FireballEntity(player.getWorld(), player, dir.multiply(8), 4 + random.nextInt(3));
-                    fireballEntity.updatePosition(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
-                    player.getWorld().spawnEntity(fireballEntity);
+                    LargeFireball fireballEntity = new LargeFireball(player.level(), player, dir.scale(8), 4 + random.nextInt(3));
+                    fireballEntity.absSnapTo(player.getX() + dir.x, player.getEyeY() + dir.y, fireballEntity.getZ() + dir.z);
+                    player.level().addFreshEntity(fireballEntity);
                 }
 
 
@@ -193,45 +192,45 @@ public class RsActive {
                     }
                 }*/
 
-                return ActionResult.SUCCESS_SERVER;
+                return InteractionResult.SUCCESS_SERVER;
             }
         }
 
         if (stack.getItem() == Blocks.TNT.asItem()) {
 
-            Vec3d dir = player.getRotationVec(1.0F);
+            Vec3 dir = player.getViewVector(1.0F);
 
-            TntEntity tnt = new TntEntity(player.getWorld(), player.getX() + dir.x, player.getEyeY() + dir.y, player.getZ() + dir.z, player);
-            tnt.setVelocity(dir.x * 1.2, dir.y * 1.2, dir.z * 1.2);
-            player.getWorld().spawnEntity(tnt);
+            PrimedTnt tnt = new PrimedTnt(player.level(), player.getX() + dir.x, player.getEyeY() + dir.y, player.getZ() + dir.z, player);
+            tnt.setDeltaMovement(dir.x * 1.2, dir.y * 1.2, dir.z * 1.2);
+            player.level().addFreshEntity(tnt);
 
-            stack.decrement(1);
+            stack.shrink(1);
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
-    public EventResult onDeath(ServerPlayerEntity player, DamageSource source) {
+    public EventResult onDeath(ServerPlayer player, DamageSource source) {
         if (player.isSpectator() || this.gameEndTimer != -1) {
-            player.teleport(player.getWorld(), 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
-            RsWaiting.resetPlayer(player, GameMode.SPECTATOR);
+            player.teleportTo(player.level(), 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
+            RsWaiting.resetPlayer(player, GameType.SPECTATOR);
             return EventResult.DENY;
         }
 
-        this.space.getPlayers().sendMessage(Text.empty().formatted(Formatting.RED).append(source.getDeathMessage(player)));
+        this.space.getPlayers().sendMessage(Component.empty().withStyle(ChatFormatting.RED).append(source.getLocalizedDeathMessage(player)));
 
-        RsWaiting.resetPlayer(player, GameMode.SPECTATOR);
-        player.teleport(player.getWorld(), 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
+        RsWaiting.resetPlayer(player, GameType.SPECTATOR);
+        player.teleportTo(player.level(), 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
 
-        long remaining = this.space.getPlayers().stream().filter(p -> p.interactionManager.isSurvivalLike()).count();
+        long remaining = this.space.getPlayers().stream().filter(p -> p.gameMode.isSurvival()).count();
         if (remaining <= 1) {
             if (remaining == 1) {
-                ServerPlayerEntity lastPlayer = this.space.getPlayers().stream().filter(p -> p.interactionManager.isSurvivalLike()).findFirst().orElse(null);
+                ServerPlayer lastPlayer = this.space.getPlayers().stream().filter(p -> p.gameMode.isSurvival()).findFirst().orElse(null);
                 if (lastPlayer != null) {
-                    this.space.getPlayers().sendMessage(Text.translatable("text.rocket_spleef.player_won", lastPlayer.getName()).formatted(Formatting.GOLD));
+                    this.space.getPlayers().sendMessage(Component.translatable("text.rocket_spleef.player_won", lastPlayer.getName()).withStyle(ChatFormatting.GOLD));
                 }
             }
-            this.space.getPlayers().sendMessage(Text.translatable("text.rocket_spleef.game_ended").formatted(Formatting.AQUA));
+            this.space.getPlayers().sendMessage(Component.translatable("text.rocket_spleef.game_ended").withStyle(ChatFormatting.AQUA));
             this.gameEndTimer = 20 * 5;
         }
 
@@ -239,8 +238,8 @@ public class RsActive {
     }
 
     private void open() {
-        for (ServerPlayerEntity player : this.space.getPlayers().participants()) {
-            player.getInventory().insertStack(ItemStackBuilder.of(Items.IRON_HOE).setUnbreakable().setName(Text.literal("Fireball Cannon")).build());
+        for (ServerPlayer player : this.space.getPlayers().participants()) {
+            player.getInventory().add(ItemStackBuilder.of(Items.IRON_HOE).setUnbreakable().setName(Component.literal("Fireball Cannon")).build());
         }
     }
 }

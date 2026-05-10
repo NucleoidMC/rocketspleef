@@ -1,16 +1,15 @@
 package supercoder79.rocketspleef.game;
 
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ChunkTicket;
-import net.minecraft.server.world.ChunkTicketType;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.Ticket;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.GameMode;
-import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.Vec3;
+import xyz.nucleoid.fantasy.RuntimeLevelConfig;
 import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
@@ -21,12 +20,12 @@ import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 import java.util.Set;
 
 public final class RsWaiting {
-    private final ServerWorld world;
+    private final ServerLevel world;
     private final GameSpace space;
     private final RsMap map;
     private final RsConfig config;
 
-    private RsWaiting(GameSpace space, RsMap map, RsConfig config, ServerWorld world) {
+    private RsWaiting(GameSpace space, RsMap map, RsConfig config, ServerLevel world) {
         this.world = world;
         this.space = space;
         this.map = map;
@@ -66,55 +65,54 @@ public final class RsWaiting {
 
         RsMap map = new RsMap(config);
 
-        RuntimeWorldConfig worldConfig = new RuntimeWorldConfig()
-                .setTimeOfDay(6000)
-                .setWorldConstructor(FakeFlatWorld::new)
+        RuntimeLevelConfig worldConfig = new RuntimeLevelConfig()
+                .setFlat(true)
                 .setGenerator(map.createGenerator(context.server()));
 
 
-        return context.openWithWorld(worldConfig, (game, world) -> {
+        return context.openWithLevel(worldConfig, (game, world) -> {
             RsWaiting waiting = new RsWaiting(game.getGameSpace(), map, context.config(), world);
             GameWaitingLobby.addTo(game, context.config().playerConfig());
 
             game.listen(GameActivityEvents.REQUEST_START, () -> waiting.requestStart(world));
             game.listen(PlayerDeathEvent.EVENT, waiting::onPlayerDeath);
-            game.listen(GamePlayerEvents.ACCEPT, offer -> offer.teleport(world, new Vec3d(0, 70, 0)));
+            game.listen(GamePlayerEvents.ACCEPT, offer -> offer.teleport(world, new Vec3(0, 70, 0)));
         });
     }
 
-    public static void resetPlayer(ServerPlayerEntity player, GameMode mode) {
-        player.getInventory().clear();
-        player.getEnderChestInventory().clear();
-        player.clearStatusEffects();
+    public static void resetPlayer(ServerPlayer player, GameType mode) {
+        player.getInventory().clearContent();
+        player.getEnderChestInventory().clearContent();
+        player.removeAllEffects();
         player.setHealth(20.0F);
-        player.getHungerManager().setFoodLevel(20);
-        player.getHungerManager().add(5, 0.5F);
+        player.getFoodData().setFoodLevel(20);
+        player.getFoodData().eat(5, 0.5F);
         player.fallDistance = 0.0F;
-        player.changeGameMode(mode);
-        player.setExperienceLevel(0);
+        player.setGameMode(mode);
+        player.setExperienceLevels(0);
         player.setExperiencePoints(0);
     }
 
-    private GameResult requestStart(ServerWorld world) {
+    private GameResult requestStart(ServerLevel world) {
         RsActive.open(this.world, this.space, this.map, this.config);
         return GameResult.ok();
     }
 
-    private void addPlayer(ServerPlayerEntity player) {
+    private void addPlayer(ServerPlayer player) {
         this.spawnPlayer(player);
     }
 
-    private EventResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
+    private EventResult onPlayerDeath(ServerPlayer player, DamageSource source) {
         this.spawnPlayer(player);
         return EventResult.DENY;
     }
 
-    private void spawnPlayer(ServerPlayerEntity player) {
-        resetPlayer(player, GameMode.SURVIVAL);
+    private void spawnPlayer(ServerPlayer player) {
+        resetPlayer(player, GameType.SURVIVAL);
 
         ChunkPos chunkPos = new ChunkPos(0, 0);
-        this.world.getChunkManager().addTicket(new ChunkTicket(ChunkTicketType.START, 1), chunkPos);
+        this.world.getChunkSource().addTicket(new Ticket(TicketType.PLAYER_LOADING, 1), chunkPos);
 
-        player.teleport(this.world, 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
+        player.teleportTo(this.world, 0, 66, 0, Set.of(), 0.0F, 0.0F, true);
     }
 }

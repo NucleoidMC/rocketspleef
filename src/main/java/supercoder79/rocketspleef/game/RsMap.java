@@ -1,7 +1,7 @@
 package supercoder79.rocketspleef.game;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public class RsMap {
     private final RsConfig config;

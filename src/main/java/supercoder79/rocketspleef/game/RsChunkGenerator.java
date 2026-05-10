@@ -1,34 +1,33 @@
 package supercoder79.rocketspleef.game;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.noise.PerlinNoiseSampler;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.StructureAccessor;
-import net.minecraft.world.gen.chunk.Blender;
-import net.minecraft.world.gen.noise.NoiseConfig;
-import xyz.nucleoid.plasmid.api.game.world.generator.GameChunkGenerator;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.blending.Blender;
+import net.minecraft.world.level.levelgen.synth.ImprovedNoise;
+import xyz.nucleoid.plasmid.api.game.level.generator.GameChunkGenerator;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public class RsChunkGenerator extends GameChunkGenerator {
-    private final PerlinNoiseSampler colorNoise;
+    private final ImprovedNoise colorNoise;
 
     public RsChunkGenerator(MinecraftServer server) {
-        super(createBiomeSource(server, BiomeKeys.PLAINS));
-        this.colorNoise = new PerlinNoiseSampler(Random.create(server.getOverworld().getSeed()));
+        super(createBiomeSource(server, Biomes.PLAINS));
+        this.colorNoise = new ImprovedNoise(RandomSource.create(server.overworld().getSeed()));
     }
 
     @Override
-    public CompletableFuture<Chunk> populateNoise(Blender blender, NoiseConfig noiseConfig, StructureAccessor structureAccessor, Chunk chunk) {
-        int startX = chunk.getPos().getStartX();
-        int startZ = chunk.getPos().getStartZ();
+    public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState noiseConfig, StructureManager structureAccessor, ChunkAccess chunk) {
+        int startX = chunk.getPos().getMinBlockX();
+        int startZ = chunk.getPos().getMinBlockZ();
 
         for (int x = startX; x < startX + 16; x++) {
             for (int z = startZ; z < startZ + 16; z++) {
@@ -37,7 +36,7 @@ public class RsChunkGenerator extends GameChunkGenerator {
 
                     double progress = (y - 31) / 66.0;
 
-                    progress += this.colorNoise.sample(x / 8.0, y / 8.0, z / 8.0) * 0.05;
+                    progress += this.colorNoise.noise(x / 8.0, y / 8.0, z / 8.0) * 0.05;
 
                     Block glass;
                     if (progress < (1 / 6.0)) {
@@ -56,15 +55,15 @@ public class RsChunkGenerator extends GameChunkGenerator {
 
                     if (manhattan <= 16) {
                         if (manhattan >= 12) {
-                            chunk.setBlockState(new BlockPos(x, y, z), glass.getDefaultState());
+                            chunk.setBlockState(new BlockPos(x, y, z), glass.defaultBlockState());
                         }
 
                         if (y <= 64 && y % 4 == 0) {
-                            chunk.setBlockState(new BlockPos(x, y, z), glass.getDefaultState());
+                            chunk.setBlockState(new BlockPos(x, y, z), glass.defaultBlockState());
                         }
 
                         if (manhattan == 11 && ((x - 1) % 2 == 0 && (z - 1) % 2 == 0 && (y - 1) % 2 == 0)) {
-                            chunk.setBlockState(new BlockPos(x, y, z), glass.getDefaultState());
+                            chunk.setBlockState(new BlockPos(x, y, z), glass.defaultBlockState());
                         }
                     }
                 }
