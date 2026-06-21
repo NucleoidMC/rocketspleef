@@ -27,7 +27,7 @@ dependencies {
     include "kdotjpg:open-simplex:2.0"
 
     // Plasmid
-    implementation "xyz.nucleoid:plasmid:0.7.0+26.1.2"
+    implementation "xyz.nucleoid:plasmid:0.7.2-SNAPSHOT+26.2"
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.

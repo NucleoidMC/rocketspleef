@@ -40,17 +40,17 @@ public class RsChunkGenerator extends GameChunkGenerator {
 
                     Block glass;
                     if (progress < (1 / 6.0)) {
-                        glass = Blocks.RED_STAINED_GLASS;
+                        glass = Blocks.STAINED_GLASS.red();
                     } else if (progress < (1 / 3.0)) {
-                        glass = Blocks.ORANGE_STAINED_GLASS;
+                        glass = Blocks.STAINED_GLASS.orange();
                     } else if (progress < (1 / 2.0)) {
-                        glass = Blocks.YELLOW_STAINED_GLASS;
+                        glass = Blocks.STAINED_GLASS.yellow();
                     } else if (progress < (2 / 3.0)) {
-                        glass = Blocks.LIME_STAINED_GLASS;
+                        glass = Blocks.STAINED_GLASS.lime();
                     } else if (progress < (5 / 6.0)) {
-                        glass = Blocks.BLUE_STAINED_GLASS;
+                        glass = Blocks.STAINED_GLASS.blue();
                     } else {
-                        glass = Blocks.PURPLE_STAINED_GLASS;
+                        glass = Blocks.STAINED_GLASS.purple();
                     }
 
                     if (manhattan <= 16) {
